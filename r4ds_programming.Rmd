@@ -1,7 +1,7 @@
 ---
 title: "R programming (r4ds Section III)"
-author: "name"
-date: "date"
+author: "Aaron Shaffer"
+date: "January 23, 2018"
 output: 
   html_document: 
     keep_md: yes
@@ -10,6 +10,24 @@ output:
 # Ch 18: Pipes
 
 _Demonstrate the use of the regular pipe (`%>%`) and the "explosion" operator (`%$%`) in some example_
+
+```{r}
+library(magrittr)
+
+x <- "Hello World"
+x %>% print()
+"x" %>% print()
+"x" %>% assign("Fizz Buzz")
+x
+env <- environment()
+"x" %>% assign("Fizz Buzz", envir = env)
+x
+```
+
+```{r}
+mtcars %$% cor(wt,mpg)
+mtcars[mtcars %$% which(mpg > 20),]
+```
 
 ----
 
