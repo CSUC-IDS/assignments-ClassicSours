@@ -88,6 +88,39 @@ mtcars[mtcars %$% which(mpg > 20),]
 ### 19.2: When should you write a function?
 Answer any 3
 
+1. True is not a paramater to `rescale01` because the rescale function takes only one argument `x` which is the vector being rescaled.  `na.rm = TRUE` is hard coded into the function itself.  If `x` contained a single missing value and `na.rm` was `FALSE` then the function would return `NA`
+
+2. Rewrite `rescale01()` to map `-Inf` to 0 and `Inf` to 1
+
+
+```r
+x <- c(1:10,100, Inf, -Inf)
+rescale01 <- function(x) {
+  x[x == -Inf] <- 0
+  x[x == Inf]  <- max(x[is.finite(x)])
+  rng <- range(x, na.rm = TRUE, finite = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale01(x)
+```
+
+```
+##  [1] 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.10 1.00 1.00 0.00
+```
+
+4.
+calculate the variance of a numeric vector $$s^2=\frac{\sum({X - \bar{x}})^2}{N-1}$$
+
+
+```r
+r4ds_var <- function(x) {
+  
+}
+```
+
+calculate the skew of a numeric vector
+
+
 _Describe one time where you wish you had written a function, but didn't._
 
 

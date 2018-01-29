@@ -168,6 +168,26 @@ x</code></pre>
 <div id="when-should-you-write-a-function" class="section level3">
 <h3>19.2: When should you write a function?</h3>
 <p>Answer any 3</p>
+<ol style="list-style-type: decimal">
+<li><p>True is not a paramater to <code>rescale01</code> because the rescale function takes only one argument <code>x</code> which is the vector being rescaled. <code>na.rm = TRUE</code> is hard coded into the function itself. If <code>x</code> contained a single missing value and <code>na.rm</code> was <code>FALSE</code> then the function would return <code>NA</code></p></li>
+<li><p>Rewrite <code>rescale01()</code> to map <code>-Inf</code> to 0 and <code>Inf</code> to 1</p></li>
+</ol>
+<pre class="r"><code>x &lt;- c(1:10,100, Inf, -Inf)
+rescale01 &lt;- function(x) {
+  x[x == -Inf] &lt;- 0
+  x[x == Inf]  &lt;- max(x[is.finite(x)])
+  rng &lt;- range(x, na.rm = TRUE, finite = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale01(x)</code></pre>
+<pre><code>##  [1] 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.10 1.00 1.00 0.00</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>calculate the variance of a numeric vector <span class="math display">\[s^2=\frac{\sum({X - \bar{x}})^2}{N-1}\]</span></li>
+</ol>
+<pre class="r"><code>r4ds_var &lt;- function(x) {
+  
+}</code></pre>
+<p>calculate the skew of a numeric vector</p>
 <p><em>Describe one time where you wish you had written a function, but didn’t.</em></p>
 </div>
 <div id="functions-are-for-humans-and-computers" class="section level3">

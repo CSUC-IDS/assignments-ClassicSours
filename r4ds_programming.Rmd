@@ -36,13 +36,104 @@ mtcars[mtcars %$% which(mpg > 20),]
 ### 19.2: When should you write a function?
 Answer any 3
 
+1. True is not a paramater to `rescale01` because the rescale function takes only one argument `x` which is the vector being rescaled.  `na.rm = TRUE` is hard coded into the function itself.  If `x` contained a single missing value and `na.rm` was `FALSE` then the function would return `NA`
+
+2. Rewrite `rescale01()` to map `-Inf` to 0 and `Inf` to 1
+
+```{r}
+x <- c(1:10,100, Inf, -Inf)
+rescale01 <- function(x) {
+  x[x == -Inf] <- 0
+  x[x == Inf]  <- max(x[is.finite(x)])
+  rng <- range(x, na.rm = TRUE, finite = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale01(x)
+```
+
+4.
+calculate the variance of a numeric vector
+
+$$s^2=\frac{\sum({X - \bar{X}})^2}{N-1}$$
+
+```{r}
+variance <- function(x) {
+  N <- length(x)
+  x.bar <- mean(x, na.rm = TRUE)
+  sum((x - x.bar)^2) / (N - 1)
+}
+x <- rnorm(100)
+var(x) == variance(x)
+```
+
+calculate the skew of a numeric vector
+
+$$\frac{\sqrt{n(n-1)}}{n-2}[\frac{\frac{1}{n}\sum_{i=1}^{n}{(x_i-\bar{x}})^{3}}{(\frac{1}{n}\sum_{i=1}^{n}{(x_i-\bar{x})^2})^\frac{3}{2}}] $$
+
+```{r}
+## Turning above formula into a function
+my_skewness <- function(x) {
+ n <- length(x)
+ x.bar <- mean(x)
+ left <- sqrt(n*(n-1))/(n-2)
+ right.numerator <- (1/n)*sum((x-x.bar)^3)
+ right.denominator <- ((1/n)*sum((x-x.bar)^2))^(3/2)
+ left * (right.numerator/right.denominator)
+}
+
+## From Notes
+skewness <- function(x) {
+    n <- length(x)
+    v <- var(x)
+    m <- mean(x)
+    third.moment <- (1/(n - 2)) * sum((x - m)^3)
+    third.moment/(var(x)^(3/2))
+}
+x<-rnorm(100)
+
+my_skewness(x)
+skewness(x)
+```
+
 _Describe one time where you wish you had written a function, but didn't._
 
+Once I tried to make a function for graphing things with various degrees of customizable input to the function.  At the end of the day I should have just copy pasted the code a few times because the logic for the function was getting unnescessary and I was just wasting time making the function as opposed to actually just doing the assignment.
 
 ### 19.3: Functions are for humans and computers
 Answer any 2
 
+1. Read the source code for each of the following three functions, puzzle out what they do, and then brainstorm better names
+
+This first function compares the first n chars of a string with a prefix passed to the argument where n is the numbers of chars in the prefix passed to the string.
+
+```{r}
+prefix_match <- function(string, prefix) {
+  substr(string, 1, nchar(prefix)) == prefix
+}
+```
+
+The function returns null if the length of the vector is `<= 1` or returns the vector minus the last element in the event that it has a length of 2 or greater
+```{r}
+drop_last_element <- function(x) {
+  if (length(x) <= 1) return(NULL)
+  x[-length(x)]
+}
+```
+
+This funciton repeats the `y` vector until there are enough elements to match the length of the `x` vector.  It might be better called `match_length` as it matches the `y` to the length of `x` by repeating itself over and over again.
+```{r}
+match_length <- function(x, y) {
+  rep(y, length.out = length(x))
+}
+```
+
+4. Make a case for why `norm_r()`, `norm_d()` etc would be better than `rnorm()`, `dnorm()`. Make a case for the opposite.
+
+As a computer scientist I like `norm_r` and `norm_d` better than `rnorm` and `dnorm` because they share a common prefix and if you were typing out the help function `?norm_**` the computer would show both options.  On the other hand saying a "normal random" distribution sounds weird to most people so having the function be `rnorm` or a "random normal" distribution or `dnorm` "density of a normal" denstribution makes more sense in spoken english than "normal distribution _ density".  If you were to be talking about your code and had it displayed in the format of `norm_d` you would likely read the function twice where as with the spelling `dnorm` its much easier to see where the acronym comes from if you talk about the funciton in spoken language.
+
 _What does "Functions are for humans and computers" mean to you?_
+
+"Functions are for humans and computers" means that functions are for humans to better understand code and make following programming logic easier for people unfamiliar with your codeing style and the work flow of your program.  And they are for computers in the fact that computers are great at optimizing repeated functions and parallelizing and obtaining optimal time complexity is essential for creating code that doesnt take forever to execute.
 
 ### 19.4 Conditional execution
 Answer any 3
