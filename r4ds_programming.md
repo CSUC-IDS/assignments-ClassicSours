@@ -1,7 +1,7 @@
 ---
 title: "R programming (r4ds Section III)"
-author: "name"
-date: "date"
+author: "Aaron Shaffer"
+date: "January 23, 2018"
 output: 
   html_document: 
     keep_md: yes
@@ -11,6 +11,76 @@ output:
 
 _Demonstrate the use of the regular pipe (`%>%`) and the "explosion" operator (`%$%`) in some example_
 
+
+```r
+library(magrittr)
+
+x <- "Hello World"
+x %>% print()
+```
+
+```
+## [1] "Hello World"
+```
+
+```r
+"x" %>% print()
+```
+
+```
+## [1] "x"
+```
+
+```r
+"x" %>% assign("Fizz Buzz")
+x
+```
+
+```
+## [1] "Hello World"
+```
+
+```r
+env <- environment()
+"x" %>% assign("Fizz Buzz", envir = env)
+x
+```
+
+```
+## [1] "Fizz Buzz"
+```
+
+
+```r
+mtcars %$% cor(wt,mpg)
+```
+
+```
+## [1] -0.8676594
+```
+
+```r
+mtcars[mtcars %$% which(mpg > 20),]
+```
+
+```
+##                 mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+## Mazda RX4      21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
+## Mazda RX4 Wag  21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+## Datsun 710     22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+## Hornet 4 Drive 21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1
+## Merc 240D      24.4   4 146.7  62 3.69 3.190 20.00  1  0    4    2
+## Merc 230       22.8   4 140.8  95 3.92 3.150 22.90  1  0    4    2
+## Fiat 128       32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+## Honda Civic    30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+## Toyota Corolla 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+## Toyota Corona  21.5   4 120.1  97 3.70 2.465 20.01  1  0    3    1
+## Fiat X1-9      27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+## Porsche 914-2  26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+## Lotus Europa   30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+## Volvo 142E     21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2
+```
+
 ----
 
 # Ch 19: Functions
@@ -18,25 +88,242 @@ _Demonstrate the use of the regular pipe (`%>%`) and the "explosion" operator (`
 ### 19.2: When should you write a function?
 Answer any 3
 
+1. True is not a paramater to `rescale01` because the rescale function takes only one argument `x` which is the vector being rescaled.  `na.rm = TRUE` is hard coded into the function itself.  If `x` contained a single missing value and `na.rm` was `FALSE` then the function would return `NA`
+
+2. Rewrite `rescale01()` to map `-Inf` to 0 and `Inf` to 1
+
+
+```r
+x <- c(1:10,100, Inf, -Inf)
+rescale01 <- function(x) {
+  x[x == -Inf] <- 0
+  x[x == Inf]  <- max(x[is.finite(x)])
+  rng <- range(x, na.rm = TRUE, finite = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale01(x)
+```
+
+```
+##  [1] 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.10 1.00 1.00 0.00
+```
+
+4.
+calculate the variance of a numeric vector
+
+$$s^2=\frac{\sum({X - \bar{X}})^2}{N-1}$$
+
+
+```r
+variance <- function(x) {
+  N <- length(x)
+  x.bar <- mean(x, na.rm = TRUE)
+  sum((x - x.bar)^2) / (N - 1)
+}
+x <- rnorm(100)
+var(x) == variance(x)
+```
+
+```
+## [1] TRUE
+```
+
+calculate the skew of a numeric vector
+
+$$\frac{\sqrt{n(n-1)}}{n-2}[\frac{\frac{1}{n}\sum_{i=1}^{n}{(x_i-\bar{x}})^{3}}{(\frac{1}{n}\sum_{i=1}^{n}{(x_i-\bar{x})^2})^\frac{3}{2}}] $$
+
+
+```r
+## Turning above formula into a function
+my_skewness <- function(x) {
+ n <- length(x)
+ x.bar <- mean(x)
+ left <- sqrt(n*(n-1))/(n-2)
+ right.numerator <- (1/n)*sum((x-x.bar)^3)
+ right.denominator <- ((1/n)*sum((x-x.bar)^2))^(3/2)
+ left * (right.numerator/right.denominator)
+}
+
+## From Notes
+skewness <- function(x) {
+    n <- length(x)
+    v <- var(x)
+    m <- mean(x)
+    third.moment <- (1/(n - 2)) * sum((x - m)^3)
+    third.moment/(var(x)^(3/2))
+}
+x<-rnorm(100)
+
+my_skewness(x)
+```
+
+```
+## [1] -0.2611237
+```
+
+```r
+skewness(x)
+```
+
+```
+## [1] -0.2585125
+```
+
 _Describe one time where you wish you had written a function, but didn't._
 
+Once I tried to make a function for graphing things with various degrees of customizable input to the function.  At the end of the day I should have just copy pasted the code a few times because the logic for the function was getting unnescessary and I was just wasting time making the function as opposed to actually just doing the assignment.
 
 ### 19.3: Functions are for humans and computers
 Answer any 2
 
+1. Read the source code for each of the following three functions, puzzle out what they do, and then brainstorm better names
+
+This first function compares the first n chars of a string with a prefix passed to the argument where n is the numbers of chars in the prefix passed to the string.
+
+
+```r
+prefix_match <- function(string, prefix) {
+  substr(string, 1, nchar(prefix)) == prefix
+}
+```
+
+The function returns null if the length of the vector is `<= 1` or returns the vector minus the last element in the event that it has a length of 2 or greater
+
+```r
+drop_last_element <- function(x) {
+  if (length(x) <= 1) return(NULL)
+  x[-length(x)]
+}
+```
+
+This funciton repeats the `y` vector until there are enough elements to match the length of the `x` vector.  It might be better called `match_length` as it matches the `y` to the length of `x` by repeating itself over and over again.
+
+```r
+match_length <- function(x, y) {
+  rep(y, length.out = length(x))
+}
+```
+
+4. Make a case for why `norm_r()`, `norm_d()` etc would be better than `rnorm()`, `dnorm()`. Make a case for the opposite.
+
+As a computer scientist I like `norm_r` and `norm_d` better than `rnorm` and `dnorm` because they share a common prefix and if you were typing out the help function `?norm_**` the computer would show both options.  On the other hand saying a "normal random" distribution sounds weird to most people so having the function be `rnorm` or a "random normal" distribution or `dnorm` "density of a normal" denstribution makes more sense in spoken english than "normal distribution _ density".  If you were to be talking about your code and had it displayed in the format of `norm_d` you would likely read the function twice where as with the spelling `dnorm` its much easier to see where the acronym comes from if you talk about the funciton in spoken language.
+
 _What does "Functions are for humans and computers" mean to you?_
+
+"Functions are for humans and computers" means that functions are for humans to better understand code and make following programming logic easier for people unfamiliar with your codeing style and the work flow of your program.  And they are for computers in the fact that computers are great at optimizing repeated functions and parallelizing and obtaining optimal time complexity is essential for creating code that doesnt take forever to execute.
 
 ### 19.4 Conditional execution
 Answer any 3
 
+1. What’s the difference between `if` and `ifelse()`? Carefully read the help and construct three examples that illustrate the key differences.
+
+`if` if used to do something if something evaluates as `true`.  You can use it to evaluate something as `false` if you do something that boils down to `false == false` which returns `true`  an If statement can be chained with multiple `else if` statements in r but `ifelse` must be nested with other `ifelse` statments if you want to use it in a simmilar fashion.
+
+
+```r
+x <- 1
+if(x == 1) {
+  print("Hello World")  
+} else {
+  print("Goodbye")
+}
+```
+
+```
+## [1] "Hello World"
+```
+
+```r
+if (x > 1) {
+  print ("Hello World")
+} else if (x <= 0) {
+  print ("Goodbye")
+} else {
+  print(x)
+}
+```
+
+```
+## [1] 1
+```
+
+```r
+ifelse(x == 1,"Hello World","Goodbye")
+```
+
+```
+## [1] "Hello World"
+```
+
+```r
+ifelse(x != 1, "Hello World",ifelse(x==1,"nested Hello World","x is not 1 and also isnt 1"))
+```
+
+```
+## [1] "nested Hello World"
+```
+
+2. Write a greeting function that says “good morning”, “good afternoon”, or “good evening”, depending on the time of day. (Hint: use a time argument that defaults to `lubridate::now()`. That will make it easier to test your function.)
+
+
+```r
+greetings <- function() {
+  time <- lubridate::now() %>% lubridate::hour()
+  if(time <= 12) {
+    "good morning"
+  } else if (time <= 17) {
+    "good afternoon"
+  } else {
+    "good evening"
+  }
+}
+greetings()
+```
+
+```
+## [1] "good evening"
+```
+
+6. What does this `switch()` call do? What happens if `x` is “e”?
+
+
+```r
+x <- "a"
+switch(x, 
+  a = ,
+  b = "ab",
+  c = ,
+  d = "cd"
+)
+```
+
+```
+## [1] "ab"
+```
+
+This switch call switches on "x" which it expects to be a charachter.  on `x==a || x==b` it will return `ab` and on `x == c || x == d` it will return `cd` when `e` is passed it doesn't output any message because there is no default return value.
+
 ### 19.5 Function arguments
 Answer any 2
+
+3. What does the `trim` argument to `mean()` do? When might you use it?
+
+Trim is used to remove a percentage of observations from the left and right of a dataset when finding the mean.  You might use it if your data set has some extreme outliers and you wanted the mean to be within the majority of the observations as opposed to somewhere between the observations and the extreme outliers.
+
+
+4. The default value for the `method` argument to `cor()` is `c("pearson", "kendall", "spearman")`. What does that mean? What value is used by default?
+
+This means that by default the functino returns the correlation using either the pearson, kendall or spearman method.  By default the pearson method is used.
 
 ### 19.6: Return values
 _Is it mandatory that you `return()` a value from a function? If not, give on reasons for why you would want to do so. If so, explain what happens if you don't include the return._
 
+No it is not mandatory that you `return()` a value from a function by default a function will return the last line of code executed in the function.  You would want to return a value if your function is doing some execution in a loop to gurantee that the right thing is returned from the function as oposed to something random and unwanted.  In these cases with loops in the body of the function generally an empty copy of the structure used for storing data is returned or NA.
+
 ### 19.7: Environment
 _What's the problem with the example function at the beginning of this chapter?_
+
+`y` is not intialized in the environment of the function.  If somebody was testing the function and had a value for `x` and `y` then `x + y` would do something but in the world that the inside of the function operates in `y` is never initialized or passed any values.
 
 ----
 
@@ -45,15 +332,107 @@ _What's the problem with the example function at the beginning of this chapter?_
 ###  20.3: Important types of atomic vector
 Answer any 2
 
+1. Describe the difference between `is.finite(x)` and `!is.infinite(x)`
+
+`is.finite(x)` returns `TRUE` if the number is finite and `FALSE` if the number is infite.  `!is.infinite(x)` return the same but what is happening is that the function is returning `TRUE` for infinite values and `FALSE` for finite valuse but the `!` operator is the returning the opposite of that value.  They are effectively the samething however the `!` operator makes the second one essentially two function instead of one.
+
+2. Read the source code for `dplyr::near()` (Hint: to see the source code, drop the ()). How does it work?
+
+This function returns `TRUE` if two numbers have very simmilar floating point values.  This is important because for a lot of bad calculators they fail something commonly refered to as the "square root of two test" and will output that $\sqrt(2)*\sqrt(2)$ is something along the lines of $1.999998$ or simmilar instead of $2$.  The `dplyr::near()` function gets around that by using a set tolerance to compare two floating point numbers and seeing how far apart they are from eachother.  Machine epsilon is only good to so many digits so functions like this are important for ensuring that very large floating point numbers are equal when they should be.
+
 ### 20.4: Using Atomic Vectors
 Answer #4, and then 2 others. 
+
+4. Create functions that take a vector as input and returns:
+
+    1. The last value. Should you use [ or [[?
+
+    
+    ```r
+    x <- c(1:10)
+    last_value <- function(x) {
+      x[[length(x)]]
+    }
+    last_value(x)
+    ```
+    
+    ```
+    ## [1] 10
+    ```
+    
+    You should use `[[` because the function should only ever extract one element
+    
+    2. The elements at even numbered positions.
+    
+    
+    ```r
+    x <- c(11:20)
+    even_elements <- function(x) {
+      x[(c(1:(length(x)/2)))*2]
+    }
+    even_elements(x)
+    ```
+    
+    ```
+    ## [1] 12 14 16 18 20
+    ```
+
+    3. Every element except the last value.
+
+    
+    ```r
+    x <- c(21:30)
+    drop_last <- function(x) {
+      x[-length(x)]
+    }
+    drop_last(x)
+    ```
+    
+    ```
+    ## [1] 21 22 23 24 25 26 27 28 29
+    ```
+    4. Only even numbers (and no missing values).
+
+    
+    ```r
+    x <- c(31:50, NA, Inf, -Inf)
+    get_even <- function(x) {
+      all_evens <- x[!x%%2]
+      all_evens[is.finite(all_evens)]
+    }
+    get_even(x)
+    ```
+    
+    ```
+    ##  [1] 32 34 36 38 40 42 44 46 48 50
+    ```
+    
+1. What does `mean(is.na(x))` tell you about a vector `x`? What about `sum(!is.finite(x))`?
+
+`mean(is.na(x))` tells you `a/n` which is how many values in the vector `x` where `a` is the number of elements in the vector `x` and `n` is the length of the vector `x` 
+
+`sum(!is.finite(x))` tells you the total number of non finite values there are in the vector `x`
+
+2. Carefully read the documentation of `is.vector()`. What does it actually test for? Why does `is.atomic()` not agree with the definition of atomic vectors above?
+
+`is.vector()` is a function used to determine if a value in the r environment is a vector or not.  It tests for if a vector has no attributes for its values other than names in which case it returns `TRUE` and `FALSE` otherwise.
+
+`is.atomic()` does not agree with the definition of atomic vectors above because R allows vectors to have names for each value where an atomic vector would strictly be values.  Lists for example can be vectors but are not atomic.
 
 ### 20.5: Recursive vectors (lists)
 Answer either one
 
+1. Draw the following lists as nested sets:
+
+`list(a, b, list(c, d), list(e, f)) = {{a},{b},{c,d},{e,f}}`
+
+`list(list(list(list(list(list(a)))))) = {{{{{{a}}}}}}`
+
 ### 20.7: Augmented vectors
 
 _Describe at least two differences between a `data.frame` and a `tibble`_
+
+A `data.frame` is a fairly simple 2d vector in which each 1d vector within the 2d vector must have the same length.  A `tibble` contains a `data.frame` so it inherits the properties of a data frame but also stores additional meta data about each one of its 1d vectors.
 
 ----
 
@@ -62,15 +441,174 @@ _Describe at least two differences between a `data.frame` and a `tibble`_
 ### 21.2: For Loops
 Any one question
 
+1. Write for loops to:
+
+    1. Compute the mean of every column in `mtcars`.
+
+    
+    ```r
+    means <- c()
+    for (x in names(mtcars)) {
+      means <- c(means, mean(mtcars[[paste(x)]]))
+    }
+    means
+    ```
+    
+    ```
+    ##  [1]  20.090625   6.187500 230.721875 146.687500   3.596563   3.217250
+    ##  [7]  17.848750   0.437500   0.406250   3.687500   2.812500
+    ```
+    
+    ```r
+    colMeans(mtcars)
+    ```
+    
+    ```
+    ##        mpg        cyl       disp         hp       drat         wt 
+    ##  20.090625   6.187500 230.721875 146.687500   3.596563   3.217250 
+    ##       qsec         vs         am       gear       carb 
+    ##  17.848750   0.437500   0.406250   3.687500   2.812500
+    ```
+    2. Determine the type of each column in nycflights13::flights.
+
+    
+    ```r
+    coltypes <- c()
+    for (x in names(nycflights13::flights)) {
+      coltypes <- c(coltypes, typeof(nycflights13::flights[[paste(x)]]))
+    }
+    coltypes
+    ```
+    
+    ```
+    ##  [1] "integer"   "integer"   "integer"   "integer"   "integer"  
+    ##  [6] "double"    "integer"   "integer"   "double"    "character"
+    ## [11] "integer"   "character" "character" "character" "double"   
+    ## [16] "double"    "double"    "double"    "double"
+    ```
+    3. Compute the number of unique values in each column of iris.
+    
+    
+    ```r
+    uniques <- c()
+    for(x in names(iris)) {
+      uniques <- c(uniques, nrow(unique(iris[paste(x)])))
+    }
+    uniques
+    ```
+    
+    ```
+    ## [1] 35 23 43 22  3
+    ```
+    
+    4. Generate 10 random normals for each of $\mu$ = -10, 0, and 100
+    
+    
+    ```r
+    dfmu <- data.frame("rnorm-10" = rep(0.0,10),
+                       "rnorm0" = rep(0.0,10),
+                       "rnorm100" = rep(0.0,10),
+                       check.names = FALSE)
+    for(i in c(1:10)) {
+      for (j in c(-10,0,100)) {
+        dfmu[i,paste("rnorm",j,sep="")] <- rnorm(1, mean = j)
+      }
+    }
+    dfmu
+    ```
+    
+    ```
+    ##      rnorm-10     rnorm0  rnorm100
+    ## 1   -9.604542 -1.2389677  99.95800
+    ## 2  -10.024019 -0.3117533  98.79756
+    ## 3  -10.519876  0.8128969 100.31556
+    ## 4  -11.548489 -0.5499289 101.49181
+    ## 5  -10.238719 -0.6616617  98.53857
+    ## 6   -8.736016  1.4637657 100.25954
+    ## 7  -10.947798  1.1795082  99.38188
+    ## 8  -11.723195 -0.9976325 100.68815
+    ## 9  -10.694320 -0.3470081  99.95346
+    ## 10 -11.646773  0.5641288  98.18746
+    ```
+    
 ### 21.3: For Loop Variations
 Problem #1
+1. Imagine you have a directory full of CSV files that you want to read in. You have their paths in a vector, `files <- dir("data/", pattern = "\\.csv$", full.names = TRUE)`, and now want to read each one with `read_csv()`. Write the for loop that will load them into a single data frame.
+
+
+```r
+files <- dir("data/", pattern = "\\.csv$", full.names = TRUE)
+filesdf <- data.frame()
+for (file in files) {
+  if(nrow(filesdf) == 0) {
+    filesdf <- readr::read_csv(paste(file)) %>% as.data.frame()
+  } else {
+    filesdf <- rbind(filesdf, readr::read_csv(paste(file)) %>% as.data.frame())
+  }
+}
+```
 
 ### 21.4: For loops vs functionals
 Problem #2
+2. Adapt `col_summary()` so that it only applies to numeric columns You might want to start with an `is_numeric()` function that returns a logical vector that has a TRUE corresponding to each numeric column.
+
+
+```r
+df <- dplyr::tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10),
+  e = "e",
+  f = rnorm(10)
+)
+col_summary <- function(df, fun) {
+  df <- df[sapply(df,class) == "numeric"]
+  out <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    out[i] <- fun(df[[i]])
+  }
+  out
+}
+col_summary(df,mean)
+```
+
+```
+## [1]  0.08838014  0.13568287 -0.33132972  0.30260948 -0.24455086
+```
 
 ### 21.5: the map function
 Any 2 problems
 
+2. How can you create a single vector that for each column in a data frame indicates whether or not it’s a factor?
+
+`some.vector <- map(df,is.factor)`
+
+2. What happens when you use the map functions on vectors that aren’t lists? What does `map(1:5, runif)` do?
+
+If you map a function to a vector that isnt a list it will call the mapped function on each element of the vector that it is passed.  `map(1:5,runif)` calls `runif` on the values `1,2,3,4,5` to create a 5 lists of random uniformly generated variables.  The 1st list has 1 value, the 2nd has 2 values etc.
+
+
+```r
+purrr::map(1:5,runif)
+```
+
+```
+## [[1]]
+## [1] 0.2363644
+## 
+## [[2]]
+## [1] 0.07543655 0.58958138
+## 
+## [[3]]
+## [1] 0.6043628 0.1667373 0.1857952
+## 
+## [[4]]
+## [1] 0.717497953 0.116428684 0.984491839 0.007056623
+## 
+## [[5]]
+## [1] 0.01089592 0.52233941 0.08324795 0.02867001 0.52414211
+```
 ----
 
 End here. The rest of 21 is for your info only
