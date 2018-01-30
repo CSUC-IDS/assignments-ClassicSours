@@ -403,7 +403,7 @@ Any 2 problems
 
 `some.vector <- map(df,is.factor)`
 
-2. What happens when you use the map functions on vectors that aren’t lists? What does `map(1:5, runif)` do?
+3. What happens when you use the map functions on vectors that aren’t lists? What does `map(1:5, runif)` do?
 
 If you map a function to a vector that isnt a list it will call the mapped function on each element of the vector that it is passed.  `map(1:5,runif)` calls `runif` on the values `1,2,3,4,5` to create a 5 lists of random uniformly generated variables.  The 1st list has 1 value, the 2nd has 2 values etc.
 
