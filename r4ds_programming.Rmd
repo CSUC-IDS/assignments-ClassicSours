@@ -358,13 +358,58 @@ Any one question
     
 ### 21.3: For Loop Variations
 Problem #1
+1. Imagine you have a directory full of CSV files that you want to read in. You have their paths in a vector, `files <- dir("data/", pattern = "\\.csv$", full.names = TRUE)`, and now want to read each one with `read_csv()`. Write the for loop that will load them into a single data frame.
+
+```{r, eval = FALSE}
+files <- dir("data/", pattern = "\\.csv$", full.names = TRUE)
+filesdf <- data.frame()
+for (file in files) {
+  if(nrow(filesdf) == 0) {
+    filesdf <- readr::read_csv(paste(file)) %>% as.data.frame()
+  } else {
+    filesdf <- rbind(filesdf, readr::read_csv(paste(file)) %>% as.data.frame())
+  }
+}
+```
 
 ### 21.4: For loops vs functionals
 Problem #2
+2. Adapt `col_summary()` so that it only applies to numeric columns You might want to start with an `is_numeric()` function that returns a logical vector that has a TRUE corresponding to each numeric column.
+
+```{r}
+df <- dplyr::tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10),
+  e = "e",
+  f = rnorm(10)
+)
+col_summary <- function(df, fun) {
+  df <- df[sapply(df,class) == "numeric"]
+  out <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    out[i] <- fun(df[[i]])
+  }
+  out
+}
+col_summary(df,mean)
+```
 
 ### 21.5: the map function
 Any 2 problems
 
+2. How can you create a single vector that for each column in a data frame indicates whether or not it’s a factor?
+
+`some.vector <- map(df,is.factor)`
+
+2. What happens when you use the map functions on vectors that aren’t lists? What does `map(1:5, runif)` do?
+
+If you map a function to a vector that isnt a list it will call the mapped function on each element of the vector that it is passed.  `map(1:5,runif)` calls `runif` on the values `1,2,3,4,5` to create a 5 lists of random uniformly generated variables.  The 1st list has 1 value, the 2nd has 2 values etc.
+
+```{r}
+purrr::map(1:5,runif)
+```
 ----
 
 End here. The rest of 21 is for your info only

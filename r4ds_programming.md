@@ -158,7 +158,7 @@ my_skewness(x)
 ```
 
 ```
-## [1] 0.3733456
+## [1] -0.2611237
 ```
 
 ```r
@@ -166,7 +166,7 @@ skewness(x)
 ```
 
 ```
-## [1] 0.3696121
+## [1] -0.2585125
 ```
 
 _Describe one time where you wish you had written a function, but didn't._
@@ -501,7 +501,7 @@ Any one question
     ## [1] 35 23 43 22  3
     ```
     
-    4. Generate 10 random normals for each of $\mu$ = -10,0, and 100
+    4. Generate 10 random normals for each of $\mu$ = -10, 0, and 100
     
     
     ```r
@@ -518,28 +518,97 @@ Any one question
     ```
     
     ```
-    ##      rnorm-10      rnorm0  rnorm100
-    ## 1  -10.492624  0.93959695 102.49830
-    ## 2   -9.240070  1.34454304 101.33156
-    ## 3   -9.929329 -0.24776400 101.51264
-    ## 4  -11.645537  1.36712058  99.81569
-    ## 5  -10.661383 -2.09721841 100.38836
-    ## 6  -10.428551 -1.88874441  98.77204
-    ## 7   -9.149892  0.07468196 101.11858
-    ## 8  -11.037714  0.37868558  99.96850
-    ## 9  -11.447030 -0.19779568 102.03913
-    ## 10 -10.480911 -1.54437075 100.98782
+    ##      rnorm-10     rnorm0  rnorm100
+    ## 1   -9.604542 -1.2389677  99.95800
+    ## 2  -10.024019 -0.3117533  98.79756
+    ## 3  -10.519876  0.8128969 100.31556
+    ## 4  -11.548489 -0.5499289 101.49181
+    ## 5  -10.238719 -0.6616617  98.53857
+    ## 6   -8.736016  1.4637657 100.25954
+    ## 7  -10.947798  1.1795082  99.38188
+    ## 8  -11.723195 -0.9976325 100.68815
+    ## 9  -10.694320 -0.3470081  99.95346
+    ## 10 -11.646773  0.5641288  98.18746
     ```
     
 ### 21.3: For Loop Variations
 Problem #1
+1. Imagine you have a directory full of CSV files that you want to read in. You have their paths in a vector, `files <- dir("data/", pattern = "\\.csv$", full.names = TRUE)`, and now want to read each one with `read_csv()`. Write the for loop that will load them into a single data frame.
+
+
+```r
+files <- dir("data/", pattern = "\\.csv$", full.names = TRUE)
+filesdf <- data.frame()
+for (file in files) {
+  if(nrow(filesdf) == 0) {
+    filesdf <- readr::read_csv(paste(file)) %>% as.data.frame()
+  } else {
+    filesdf <- rbind(filesdf, readr::read_csv(paste(file)) %>% as.data.frame())
+  }
+}
+```
 
 ### 21.4: For loops vs functionals
 Problem #2
+2. Adapt `col_summary()` so that it only applies to numeric columns You might want to start with an `is_numeric()` function that returns a logical vector that has a TRUE corresponding to each numeric column.
+
+
+```r
+df <- dplyr::tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10),
+  e = "e",
+  f = rnorm(10)
+)
+col_summary <- function(df, fun) {
+  df <- df[sapply(df,class) == "numeric"]
+  out <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    out[i] <- fun(df[[i]])
+  }
+  out
+}
+col_summary(df,mean)
+```
+
+```
+## [1]  0.08838014  0.13568287 -0.33132972  0.30260948 -0.24455086
+```
 
 ### 21.5: the map function
 Any 2 problems
 
+2. How can you create a single vector that for each column in a data frame indicates whether or not it’s a factor?
+
+`some.vector <- map(df,is.factor)`
+
+2. What happens when you use the map functions on vectors that aren’t lists? What does `map(1:5, runif)` do?
+
+If you map a function to a vector that isnt a list it will call the mapped function on each element of the vector that it is passed.  `map(1:5,runif)` calls `runif` on the values `1,2,3,4,5` to create a 5 lists of random uniformly generated variables.  The 1st list has 1 value, the 2nd has 2 values etc.
+
+
+```r
+purrr::map(1:5,runif)
+```
+
+```
+## [[1]]
+## [1] 0.2363644
+## 
+## [[2]]
+## [1] 0.07543655 0.58958138
+## 
+## [[3]]
+## [1] 0.6043628 0.1667373 0.1857952
+## 
+## [[4]]
+## [1] 0.717497953 0.116428684 0.984491839 0.007056623
+## 
+## [[5]]
+## [1] 0.01089592 0.52233941 0.08324795 0.02867001 0.52414211
+```
 ----
 
 End here. The rest of 21 is for your info only
