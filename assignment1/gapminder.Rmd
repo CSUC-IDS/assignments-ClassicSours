@@ -1,0 +1,141 @@
+---
+title: "Gapminder"
+author: "Aaron Shaffer"
+date: "February 10, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<h1>Prompt</h1>
+
+<h3>Using the gapminder data set, explore the question "How does life expectancy change over time for each country?"<h3>
+
+
+<h2>Part 1. Read the Data</h2>
+
+```{r}
+suppressMessages(library(magrittr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(plotly))
+suppressMessages(library(webshot))
+
+gapminder <- read.csv("gapminder-FiveYearData.csv")
+```
+
+<h2>Part 2. Visualizing the Data </h2>
+
+```{r}
+gapminder.gg <- ggplot(gapminder) +  
+  geom_line(aes(x = year, y = lifeExp, color = country), 
+              alpha = .85, stat = "smooth", method = "loess") + 
+  facet_grid(~continent, scales = "free") + 
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 60, hjust = 1),
+        plot.margin = margin(0,0,50,10))
+```
+```{r, eval = FALSE}
+ggplotly(gapminder.gg)
+```
+<center>
+```{r, echo = FALSE}
+ggplotly(gapminder.gg + xlab(""))  %>% layout(xaxis = list(title = "Year"))
+```
+</center>
+<br>
+
+<h3> Initial Takeaway </h3>
+
+In order to make the GG plot look readable the legend needs to be temporarily hidden away because there are so many different countries in the data set.  However since this is an html document you can use the plotly package to make the graph interactive.  At a quick glance there definately seems to be a large difference in life expectancy over the years on a country to country basis and a quick LM will go on and show this. However printing the full thing will take a  lot of space consdering that there are 142 different countries so here is just a quick glance at the Asian Countries
+
+```{r}
+gapminder.asia.lm <- lm(lifeExp ~ country, 
+                        data = gapminder[gapminder$continent == "Asia",])
+library(pander)
+pander(summary(gapminder.asia.lm))
+```
+
+Lets take another look at life expectancy by continent per year.
+
+```{r}
+continent.gg <- ggplot(gapminder) + 
+  geom_boxplot(aes(x = continent, y = lifeExp), width = 1) + 
+  facet_wrap(~year, ncol = 3) + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1),
+        plot.margin = margin(0,0,45,10))
+```
+```{r, eval = FALSE}
+ggplotly(continent.gg)
+```
+<center>
+
+```{r, echo = FALSE, fig.height = 7.75}
+ggplotly(continent.gg + xlab(""))  %>% layout(xaxis = list(title = "Continent"))
+```
+
+</center>
+<br>
+<br>
+
+On a Continent by continental basis its very clear that life expectancy differs greatly.  Lets investigate just a bit more closely For Asia.
+
+```{r}
+asian.lifeExp.gg <- ggplot(gapminder[gapminder$continent == "Asia",]) + 
+  geom_boxplot(aes(x = country, y = lifeExp), width = 1) + 
+  theme(axis.text.x = element_text(angle = 80, hjust = 1),
+        plot.margin = margin(0,0,45,10))
+```
+```{r, eval = FALSE}
+ggplotly(asian.lifeExp.gg)
+```
+<center>
+```{r, echo = FALSE}
+ggplotly(asian.lifeExp.gg) %>% layout(xaxis = list(title = "Country"))
+```
+</center>
+
+Now that its clear that there is a Difference of life expectancy by country lets investigate how `gdpPercap` influences this. 
+```{r}
+gpdPercap.bycountry.gg <- ggplot(gapminder, aes(x = year, y = gdpPercap, color = country)) + geom_point() + 
+  geom_line(stat = "smooth", method = "loess") +
+  facet_wrap(~continent, ncol = 1, scales = "free") +
+  theme(legend.position = "none",
+        plot.margin = margin(0,0,50,50))
+```
+```{r, eval = FALSE}
+ggplotly(gpdPercap.bycountry.gg)
+```
+<center>
+```{r, echo = FALSE, fig.height=16}
+ggplotly(gpdPercap.bycountry.gg + xlab("") + ylab(""))
+```
+</center>
+
+```{r}
+gapminder$gdpQuartile <- gapminder %>% group_by(year) %$% factor(dplyr::ntile(gdpPercap, 4))
+gdpLifeExp.gg <- ggplot(gapminder, aes(x = as.factor(year), y = lifeExp, color = gdpQuartile)) + 
+  geom_boxplot(alpha = .5, fill = NA) +
+  geom_line(aes(group = gdpQuartile), stat = "smooth", method = "loess", alpha = .5) +
+  facet_wrap(~continent, ncol = 1, scale = "free") +
+  theme(legend.position = "none",
+        plot.margin = margin(0,50,25,50)) 
+```
+```{r, eval = FALSE}
+ggplotly(gdpLifeExp.gg)
+```
+<center>
+```{r, echo = FALSE, fig.height=16}
+ggplotly(gdpLifeExp.gg)
+```
+</center>
+
+The things thats the most interesting about these graphs is before creating them I broke down `gdpQuartile` by year.  And you can see that in some years several continents didn't even have either the highest or lowest quartiles of gdp but regardless of that there is a clear trend that higher `gdpPer` Is having some effects on increased life expectancy.  Countries are of course a major part of it but there are clear gaps between each level of `gdpQuartile`
+
+<h2>Conclusions</h2>
+
+On a country by country basis `gdpPer` or GDP Per Capita does show that the life expectancy of an indivual relates directly to the wealth of your nation.  Visualizing the data and creating some linear models for this helps to show that in a way thats more easily digestable for people.  None of my visualization models or graphs take `pop` into consideration but using all of the other variables together the effects of wealth and location have on life expectancy is quite clear.
+
+Some trickery has gone into the plotting of the graphs.  And that will be covered in the separate R file for the walkthrough of knitting this one.
+
