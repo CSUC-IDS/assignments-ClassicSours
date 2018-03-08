@@ -1,0 +1,345 @@
+---
+title: ISLR Ch2
+author: Aaron Shaffer
+date: '2018-02-26'
+slug: islr_ch2
+categories:
+  - r
+tags:
+  - homework
+  - plot
+  - R Markdown
+summary: "ISLR Ch2 Exercises #1, #2, #4, #10"
+---
+
+<h1>
+  ISLR Ch2 Exercises: #1, #2, #4, #10
+</h1>
+
+<h3>
+  1. For each of parts (a) through (d), indicate whether we would generally expect the performance of a flexible statistical learning method to be better or worse than an inflexible method. Justify your answer. 
+</h3>
+
+<h4> 
+  $(a)$ The sample size `n` is extremely large, and the number of predictors `p` is small.
+</h4>
+
+> Because of the abundance of data `n` the flexible method will perform better than the inflexible method.  This is because the inflexible method will be highly squewed by any outliers in the small sample which won't affect the inflexible model nearly as much.
+
+<h4> 
+  $(b)$ The number of predictors `p` is extremely large, and the number of observations `n` is small.
+</h4>
+
+> Because of the large number of predictors `p` the inflexible method will perform better than the inflexible method.  This is because with so many predictors the flexible method will overfit on the small observations `n`.
+
+<h4>
+  $(c)$ The relationship between the predictors and response is highly non-linear.
+</h4>
+
+> Because the flexible metod has more degrees of freedom than the inflexible method you can generally expect it to out perform the inflexible method.
+
+<h4>
+  $(d)$ The variance of the error terms, i.e. $\sigma^2$ = `Var( )`, is extremely high.
+</h4>
+
+> Since the $\sigma^2$ is so high the inflexible method will outperform the flexible method because it will mimic the large variance and increase the variance in the results that it predicts as well.
+
+<h3>
+  2. Explain whether each scenario is a `classification` or `regression` problem, and indicate whether we are most interested in `inference` or `prediction`. Finally, provide `n` and `p`
+</h3>
+
+<h4>
+  $(a)$ We collect a set of data on the top `500` firms in the US. For each firm we record `profit`, `number of employees`, `industry` and the `CEO salary`. We are interested in understanding which factors affect `CEO salary`. 
+</h4>
+
+This is a `regression` model.  We are trying to `inference` `CEO salary`.
+
+```{r, eval = FALSE}
+n <- 500
+p <- 3
+```
+
+$P_1$ = `profit`, numeric
+
+$P_2$ = `number of employees`, numeric
+
+$P_3$ = `industry`, categorical
+
+<h4> 
+  $(b)$ We are considering launching a new product and wish to know whether it will be a `success` or a `failure`. We collect data on `20` similar products that were previously launched. For each product we have recorded whether it was a `success` or `failure`, `price charged for the product`, `marketing budget`, `competition price`, and `ten other variables`.
+</h4>
+
+Since the outcome of our model is a `success = (1)` or a `failure = (0)` we need to use a `classification` model that tells us either `success` or `failure` in order to make a `prediction` on how our product launch will go.
+
+```{r, eval = FALSE}
+n <- 20
+p <- 13
+```
+
+$P_1$ = `price`, numeric
+
+$P_2$ = `marketing budget`, numeric
+
+$P_3$ = `competition price`, numeric
+
+$P_4$ -> $P_{13}$ `10 other variables`, mystery variables
+
+<h4>
+  $(c)$ We are interested in predicting the `% change in the USD/Euro exchange rate` in relation to the `weekly changes in the world stock markets`. Hence we collect weekly data for all of 2012. For each week we record the `% change in the USD/Euro`, the `% change in the US market`, the `% change in the British market`, and the `% change in the German market`.
+</h4>
+
+Since the outcome of our model isn't a yes or no variable this is another `regresssion` model in which we are trying to make a `prediction` on `% change in the USD/Euro exchange rate`. 
+
+```{r, eval = FALSE}
+n <- 52 // weeks in a year
+p <- 3
+```
+
+$P_1$ = `% change in the US market`, numeric
+
+$P_2$ = `% change in the British market`, numeric
+
+$P_3$ = `% change in the German market`, numeric
+
+<h3>
+  4. You will now think of some real-life applications for statistical learning.
+</h3>
+
+<h4>
+  $(a)$ Describe three real-life applications in which classification might be useful. Describe the response, as well as the predictors. Is the goal of each application inference or prediction? Explain your answer.
+</h4>
+
+1. Classify if a picture/set of observations is a cat or a dog.  The response is a binary outcome ie. something along the lines of `success = dog` `failure = cat`.  If you were to approach this with a basic model then information such as `height`, `weight`, `color`, `length` would be important predictors for determining if something was a cat or a dog.  The goal of this application would be to `infer` if the observations were of a cat or a dog.
+
+2. Determine if somebody is a `coffee` or a `tea` person based on their answers in a survey.  If you were a company that sold both `coffee` and `tea` related products then having a questionaire about other things that aren't quite `coffee` and `tea` might help you determine what kind of advertisements to target each customer with.  Things such as `purchase habits` and survey responses could be used to create a customer profile that can be used to deliever targeted advertisement to consumers for their favorite cafinated beverage.  This would be a `predictive` model.
+
+3. Clasification of a `number` or `letter` from written text is a very important application of classification in the real world.  The response would be a `number 0-9` or letter `a-zA-Z` from a piece of written text.  predictors would be some way of taking that written text and converting it into input, such as overlaying a grid over the character and using that information to determine what is within the grid.  This is an `inference` model.
+
+<h4>
+  $(b)$ Describe three real-life applications in which regression might be useful. Describe the response, as well as the predictors. Is the goal of each application inference or prediction? Explain your answer.
+</h4>
+
+1. Determine how expensive a car is based on its features.  This might be useful if you were an auto maker and you wanted to make a new car and you had to know a competitive price point to list your car at.  You would take observations such as `price`, `number of doors`, `mpg`, `sunroof`, `gps`, `etc.` to build a model to `predict` a good price point to sell your new car at, as well as what features in a car make it worth the most money.
+
+2. Determine sombodys `favorite coffee roast` based on their other food preferences.  Say you're a company looking to use targeted advertisement to sell different roasts to customers, having a model based on their spending habits and food preferences might help determine the best kind of roasts to suggest to them.  Some predictors for favorite roast might be, `carnivore`/`vegetarian`, `frequency of coffee drinking`, `average amount spent on coffee`, `etc.`  from some combination of these variables and many others you can build a flavor profile for the consumer and entice them with their favorite roasts, or even suggest them a new roast when their dietary habits change and a new blend might go better with their breakfast/dinner.  The goal of this application would be `prediction`
+
+3. Determine what `breed of dog` is most suited for a person based on their habits and daily routine.  This would be a `predictive` model that would be designed and tuned to best recommend your new best friend.  A real world application of such a system might be implented by a pound or dog shelter as follows.  
+
+    (3.a) Potential new pet owner goes to the website of the pound/animal shelter and is interested in adoption but not sure what dog is best for them
+    
+    (3.b) They clicks a link for this survey about which can be used to help determine which dog breed is best for them
+    
+    (3.c) After completing the survey about them they are told the breed that best matches their daily routine and given a brief read up about that breed and its features.
+    
+    (3.d) Show them the dogs of that given breed currently up for adoption as well as dogs of breeds for what the model predicted as their 2nd, 3rd most fitting breed etc.
+
+    (3.e)  Following successful adoption the new pet owner is very excited and proud of what they did in finding their new best friend and then encourages their friends to go to the website and take the survey and more dogs(and cats) find homes.
+
+<h4>
+  $(c)$ Describe three real-life applications in which cluster analysis might be useful.
+</h4>
+
+
+1. If you want to determine which track-and-field sport might be best for a new higschool freshmen to participate in you might want to have clusters of where people who are part of the 100m,200m sprints, or 1mile etc.  As well as discus and shotput and highjump and all the other sports based on height, weight and strength levels.  With this information you can have a good starting point for recommending a sport for the new freshman to try out and as they get stronger and grow then they might land somewhere else according to the clustering model and they might consider moving to a new event.  The goal of this model would be prediction.
+
+2. Simmilar to the 1st example, if you were given the height, weight and 40yd sprint time of a football player can you use inference to determine which role they play on a football team?
+
+3. Cluster a video game player into an RPG Player, FPS Player, PvPer, PvEr etc based on their gaming habits and what kind of titles they've enjoyed in the past.  The goal of this model would be prediction and it could be used to suggest new titles that players might like to try out in the future.
+
+<h3>
+  10. This exercise involves the $Boston$ housing data set.
+</h3>
+
+<h4> $(a)$ To begin, load in the $Boston$ data set. The Boston data set is part of the `MASS` library in R . </h4>
+
+
+```{r}
+Boston <- MASS::Boston
+```
+
+How many rows are in this data set?
+```{r, echo = FALSE, comment = NA}
+cat(sprintf("There are %d rows in the Boston Dataset",nrow(Boston)))
+```
+How many columns?
+```{r, echo = FALSE, comment = NA}
+cat(sprintf("There are %d column in the Boston Dataset",ncol(Boston)))
+```
+
+What do the rows and columns represent?
+
+Each row represents a new set of observations.  And Each column represents a "p".
+
+<h4> $(b)$ Make some pairwise scatterpltos of the predictors (columns) in the dataset.  Describe your findings </h4>
+
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(gridExtra)
+```
+
+```{r, echo = FALSE}
+gg.rm.indus <- ggplot(aes(x = rm, y = indus),data = Boston) + geom_point(shape = 1, size = 1.5, alpha = .95) + theme_classic()
+
+gg.crim.dis <- ggplot(aes(x = crim, y = dis),data = Boston) + geom_point(shape = 1, size = 1.5, alpha = .95) + theme_classic()
+
+gg.black.medv <- ggplot(aes(x= black, y = medv),data = Boston) + geom_point(shape = 1, size = 1.5, alpha = .95) + theme_classic()
+
+gg.age.lstat <- ggplot(aes(x = age, y = lstat),data = Boston) + geom_point(shape = 1, size = 1.5, alpha = .95) + theme_classic()
+
+```
+
+<center>
+```{r, echo = FALSE, fig.width = 7}
+subplot(gg.rm.indus, gg.age.lstat, gg.crim.dis, gg.black.medv, 
+        nrows = 2, titleX = TRUE, titleY = TRUE, margin = c(.1,.1,.1,.1), widths = c(.5,.5), heights = c(.5,.5))
+```
+</center>
+
+
+(1,1). There doesnt seem to be any connection between `rm`:"Average number of rooms per dwelling", and `indus`:"proportion of non-retail acres per town".
+
+(1,2). There seems to be some kind of upwards trend where as `age`:"proportion of owner occupied units built prior to 1940", increases so does `lstat`: "lower stat of the population (percent)"  Which might suggest that places with newer construction have more poor residents.
+
+(2,1). There doesn't appear to be any kind of relaitonship between `crim`: "per capita crime rate by town." and `dis`:"weighted mean of distances to five Boston employment centres."
+
+(2,2). There appears to be some kind of relation ship going on between `black`:"1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town." And `medv`: "median value of owner-occupied homes in \$1000s."
+
+<h4>
+  $(c)$ Are any of the predictors associated with per capita crime rate? If so, explain the relationship.
+</h4>
+
+<center>
+```{r, echo = FALSE}
+crim <- cor(Boston) %>% data.frame() %>% select(crim) %>% t()
+crim <- crim[,which(crim != 1)]
+crim <- crim[order(-crim)]
+pander::pander(crim[crim > 0])
+```
+ </center>
+ 
+ Above are all of the predictors with a corelation with crim > 0 and below are the plots of all of these predictors as `x` with `y` as `crim`
+
+```{r, fig.height = 3, fig.width = 10, fig.align= 'center', echo = FALSE}
+blankleft <- theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), 
+        axis.line.y = element_blank(), axis.title.y = element_blank())
+gg.r.c <- ggplot(aes(x = rad,y = crim), data = Boston) + geom_point(shape = 1) + theme_classic()
+gg.t.c <- ggplot(aes(x = tax, y = crim), data = Boston) + geom_point(shape = 1) + theme_classic() + blankleft
+gg.l.c <- ggplot(aes(x = lstat, y = crim), data = Boston) + geom_point(shape = 1) + theme_classic() + blankleft
+gg.n.c <- ggplot(aes(x = nox, y = crim), data = Boston) + geom_point(shape = 1) + theme_classic() + blankleft
+gg.i.c <- ggplot(aes(x = indus, y = crim), data = Boston) + geom_point(shape = 1) + theme_classic() + blankleft
+gg.a.c <- ggplot(aes(x = age, y = crim), data = Boston) + geom_point(shape = 1) + theme_classic() + blankleft
+gg.p.c <- ggplot(aes(x = ptratio, y = crim), data = Boston) + geom_point(shape = 1) + theme_classic() + blankleft
+
+grid.arrange(gg.r.c,gg.t.c,gg.l.c,gg.n.c,gg.i.c,gg.a.c,gg.p.c,nrow = 1)
+```
+
+While some correlations were calculated some of the extremely high crime-per-capita ratios are likely throwing off the correlation by quite a lot.
+<h4>
+  $(d)$ Do any of the suburbs of Boston appear to have particularly high crime rates? Tax rates? Pupil-teacher ratios? Comment on the range of each predictor.
+</h4>
+
+`crim`: "per capita crime rate by town."
+
+<center>
+```{r, echo = FALSE, fig.width = 7, warning = FALSE}
+gg.crim <- ggplot(aes(x = crim, fill = as.factor(..x..)), data = Boston) + 
+  geom_histogram(binwidth = 5) + 
+  stat_bin(binwidth = 5, geom="text", aes(label = ifelse(..count..,..count..,NA)), vjust = -.5) +
+  theme_classic() + 
+  scale_fill_discrete(name = "crim")  +
+  guides(fill = guide_legend(ncol = 3))
+
+
+gg.crim
+```
+</center>
+Yes,  There are 3 towns with a per capita crime rate over 70, and one of those has a per capita crime rate of nearly 90! (88.9762)
+
+
+`tax`:  "full-value property-tax rate per \$10,000."
+
+<center>
+```{r, echo = FALSE, fig.width = 7}
+gg.tax <- ggplot(aes(x = tax, fill = as.factor(..x..)), data = Boston) + 
+  geom_histogram(binwidth = 30) + 
+  stat_bin(binwidth = 30, geom="text", aes(label = ..count..), vjust = -.5) + 
+  theme_classic() + 
+  scale_fill_discrete(name = "tax") +
+  guides(fill = guide_legend(ncol = 3))
+
+gg.tax
+```
+</center>
+
+Yes, there are 132 towns with tax rates of ~\$660 per \$10,000 and 5 towns with a tax rate of ~\$720 per \$10,000
+
+
+`ptratio`: "pupil-teacher ratio by town."
+
+<center>
+```{r, echo = FALSE, fig.width = 7}
+gg.ptratio <- ggplot(aes(x = ptratio, fill = as.factor(..x..)), data = Boston) + 
+  geom_histogram(binwidth = 1.5) + 
+  stat_bin(binwidth = 1.5, geom="text", aes(label = ..count..), vjust = -0.5) +
+  theme_classic() + 
+  scale_fill_discrete(name = "ptratio")
+
+
+gg.ptratio
+```
+</center>
+There are two towns with a pupil to teacher ratio of around ~22.5 Students per teacher!  There are also a ton of towns around the ~18-20 range and just 3 towns with that fall into the ~12.0 students per teacher ratio.
+
+<h4>
+  $(e)$ How many of the suburbs in this data set bound the Charles river? `range()`
+</h4>
+
+```{r}
+sum(Boston$chas)
+```
+
+There are 35 suburbs bounded by the Charles river in the data set.
+
+<h4> 
+  $(f)$ What is the median pupil-teacher ratio among the towns in this data set?
+</h4>
+```{r}
+Boston %$% median(ptratio)
+```
+
+The median pupil-teacher ratio among the towns in the data set is 19.05.  
+
+<h4>
+  $(g)$ Which suburb of Boston has lowest median value of owner occupied homes? What are the values of the other predictors for that suburb, and how do those values compare to the overall ranges for those predictors? Comment on your findings.
+</h4>
+
+```{r}
+suburbs <- Boston  %$% which(medv == min(medv))
+pander::pander(Boston[suburbs,])
+```
+
+
+<h4>
+  $(h)$ In this data set, how many of the suburbs average more than seven rooms per dwelling? More than eight rooms per dwelling? Comment on the suburbs that average more than eight rooms per dwelling
+</h4>
+
+```{r}
+Boston.greater.7 <- Boston[Boston %$% which(rm >= 7),]
+```
+
+<center>
+```{r, echo = FALSE, fig.width = 7}
+gg.ptratio <- ggplot(aes(x = rm, fill = as.factor(..x..)), data = Boston.greater.7) + 
+  geom_histogram(binwidth = 1) + 
+  stat_bin(binwidth = 1, geom="text", aes(label = ..count..), vjust = -.5) + 
+  theme_classic() + 
+  scale_fill_discrete(name = "rm")
+
+gg.ptratio
+```
+</center>
+
+```

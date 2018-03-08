@@ -1,0 +1,307 @@
+---
+title: ISLR Ch 3
+author: Aaron Shaffer
+date: '2018-03-05'
+slug: islr_ch3
+categories:
+  - r
+  - ISLR
+tags:
+  - homework
+  - R Markdown
+summary: "ISLR Ch3 Exercises #4, #15"
+header-includes:
+  \usepackage[dvipsnames]{xcolor}
+output: 
+  html_document:
+    keep_md: true
+---
+
+<h1> ISLR Ch3 Exercises #4, #15 </h1>
+
+<h3> 
+  4. I collect a set of data (`n = 100` observations) containing a single predictor and a quantitative response. I then fit a linear regression model to the data, as well as a separate cubic regression, i.e. $Y = \beta_{0}+\beta_{1}X+\beta_{2}X^{2}+\beta_{3}X^{3}+\epsilon$. 
+</h3>
+
+<h4> $(a)$ Suppose that the true relationship between `X` and `Y` is `linear`, i.e. $Y = \beta_0 + \beta_{1}X + \epsilon$. Consider the training residual sum of squares `(RSS)` for the linear regression, and also the training `RSS` for the cubic regression. Would we expect one to be lower than the other, would we expect them to be the same, or is there not enough information to tell? Justify your answer.</h4>
+
+> We would expect `RSS` to be lower for the `cubic regression`.  This model is much more flexible and will allow for the line to be much closer to the training data set. 
+# I feel like the RSS would be lower for the linear regression since we know that the true relationship is linear. I'm 100% sure though. 
+
+<h4> $(b)$ Answer $(a)$ using test rather than training RSS. </h4>
+
+> We would expect the `RSS` to be lower for the `linear regression`.  Since the true underlying relationship is linear the cubic regression is more likely to overpredict on the training set and therefor have a higher `RSS` for the test set.
+
+<h4> $(c)$ Suppose that the true relationship between `X` and `Y` is not linear, but we don’t know how far it is from linear. Consider the training RSS for the linear regression, and also the training RSS for the cubic regression. Would we expect one to be lower than the other, would we expect them to be the same, or is there not enough information to tell? Justify your answer. </h4>
+
+> The `cubic regression` model will perform better on the training set because it has greater degrees of freedom and the model is also non linear.
+
+<h4> $(d)$ Answer $(c)$ using test rather than training RSS. </h4>
+
+> It is very possible that the `cubic regression` model will perform better on the test rather than the training data than the `linear regression` model but.  If the `cubic regression` model is over trained on the training data then the `linear regerssion` model might strike a better line through the test data data and have a lower `RSS`
+
+
+<h3> 15. This problem involves the `Boston` data set, which we saw in the lab for this chapter. We will now try to predict `per capita crime rate` using the other variables in this data set. In other words, `per capita crime rate` is the `response`, and the other variables are the predictors. </h3>
+
+```{r}
+Boston <- MASS::Boston
+```
+
+<h4>$(a)$ For each predictor, fit a simple linear regression model to predict the response. Describe your results. In which of the models is there a statistically significant association between the predictor and the response? Create some plots to back up your assertions.</h4>
+
+```{r}
+library(magrittr)
+lm.age     <- Boston %$% lm(crim~age)
+lm.black   <- Boston %$% lm(crim~black)
+lm.chas    <- Boston %$% lm(crim~chas)
+lm.dis     <- Boston %$% lm(crim~dis)
+lm.indus   <- Boston %$% lm(crim~indus)
+lm.lstat   <- Boston %$% lm(crim~lstat)
+lm.medv    <- Boston %$% lm(crim~medv)
+lm.nox     <- Boston %$% lm(crim~nox)
+lm.ptratio <- Boston %$% lm(crim~ptratio)
+lm.rad     <- Boston %$% lm(crim~rad)
+lm.rm      <- Boston %$% lm(crim~rm)
+lm.tax     <- Boston %$% lm(crim~tax)
+lm.zn      <- Boston %$% lm(crim~zn)
+```
+
+> the following variables had a statistically signifigant associate between `crim` and themselves `age`, `black`, `dis`, `lstat`, `medv`, `ptratio`, `rad`, `rm`, `tax`, `zn`
+
+```{r, echo = FALSE, fig.align='center', fig.width=8}
+suppressMessages(library(pander))
+library(ggplot2)
+# age
+gg.age <- ggplot(Boston, aes(y = crim, x = age)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~age')
+
+# black
+gg.black <- ggplot(Boston, aes(y = crim, x = black)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~black')
+
+# dis 
+gg.dis <- ggplot(Boston, aes(y = crim, x = dis)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~dis')
+
+# lstat
+gg.lstat <- ggplot(Boston, aes(y = crim, x = lstat)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~lstat')
+
+# medv
+gg.medv <- ggplot(Boston, aes(y = crim, x = medv)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~medv')
+
+# ptratio 
+gg.ptratio <- ggplot(Boston, aes(y = crim, x = ptratio)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~ptratio')
+
+# rad
+gg.rad <- ggplot(Boston, aes(y = crim, x = rad)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~rad')
+
+# rm
+gg.rm <- ggplot(Boston, aes(y = crim, x = rm)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~rm')
+
+# tax
+gg.tax <- ggplot(Boston, aes(y = crim, x = tax)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~tax')
+
+#zn 
+gg.zn <- ggplot(Boston, aes(y = crim, x = zn)) + 
+  geom_point() + stat_smooth(method = 'lm') + 
+  ggtitle('crim~zn')
+
+library(gridExtra)
+grid.arrange(gg.age, gg.black, gg.dis, gg.lstat, gg.medv,
+             gg.ptratio, gg.rad, gg.rm, gg.tax, gg.zn, ncol = 5)
+```
+#Nice grid of plots
+
+<h4>$(b)$ Fit a multiple regression model to predict the response using all of the predictors. Describe your results. For which predictors can we reject the null hypothesis $H_0$ : $\beta_j = 0$?</h4>
+
+```{r}
+mult.reg.all <- lm(crim~., data=Boston)
+pander(anova(mult.reg.all))
+```
+
+> we can drop the following predictors, `tax`, `ptratio`.  `rm` is almost able to be rejected.  Next `chas` and `age` are on the chopping block.  Lastly `age` and `medv` also don't have \*\*\* signifigance
+
+<h4>$(c)$ How do your results from $(a)$ compare to your results from $(b)$? Create a plot displaying the univariate regression coefficients from $(a)$ on the `x-axis`, and the multiple regression coefficients from $(b)$ on the `y-axis`. That is, each predictor is displayed as a single point in the plot. Its coefficient in a simple linear regression model is shown on the `x-axis`, and its coefficient estimate in the multiple linear regression model is shown on the `y-axis`.</h4>
+
+<center>
+
+```{r, echo = FALSE}
+mult.reg.coef <- mult.reg.all$coefficients[-1]
+
+uni.reg.coef <-
+  c(lm.zn$coefficients[2],
+    lm.indus$coefficients[2],
+    lm.chas$coefficients[2],
+    lm.nox$coefficients[2],
+    lm.rm$coefficients[2],
+    lm.age$coefficients[2],
+    lm.dis$coefficients[2],
+    lm.rad$coefficients[2],
+    lm.tax$coefficients[2],
+    lm.ptratio$coefficients[2],
+    lm.black$coefficients[2],
+    lm.lstat$coefficients[2],
+    lm.medv$coefficients[2])
+
+coef.df <- data.frame(uni.reg.coef,mult.reg.coef)
+coef.df <- cbind(coef.df, 'predictor' = rownames(coef.df))
+
+suppressMessages(library(plotly))
+ggplotly(ggplot(aes(x = uni.reg.coef, y = mult.reg.coef, label = predictor), data = coef.df) + 
+  geom_point(shape = 1) + theme_classic())
+```
+</center>
+
+> from the plot you can see that `nox` is varies quite a lot from the `univariate regression coefficients` {$31.25$} to the `multivariate regression coefficients` {$-10.32$}
+
+<h4>(d) Is there evidence of non-linear association between any of the predictors and the response? To answer this question, for each predictor X, fit a model of the form $Y = \beta_{0} + \beta_{1}{X} + \beta_{2}{X}^{2} + \beta_{3}{X}^{3} + \epsilon$.</h4>
+
+```{r, fig.align='center', fig.width = 8, echo = FALSE}
+suppressMessages(library(reshape2))
+cor.df <- Boston[-1] %>% cor() %>% as.data.frame()
+cor.df[upper.tri(cor.df)] <- NA
+cor.melt.df <- cor.df %>% as.matrix() %>%  melt(na.rm = TRUE) %>% filter(value != 1)
+cor.melt.df$Var2 <- factor(cor.melt.df$Var2, levels = rev(levels(cor.melt.df$Var2)))
+ggplot(aes(x = Var1, y = Var2, label = round(value,3)), data = cor.melt.df) + 
+  geom_tile(aes(fill = value), color = 'black') +
+  geom_text() + 
+  scale_fill_distiller(palette='RdYlGn', trans = "reverse", guide = guide_colorbar(reverse = TRUE)) + 
+  theme_classic() +
+  scale_x_discrete(expand = expand_scale(add=-3)) #whatever package expand_scale is in doesnt seem to be loaded
+```
+
+The colors represent how far apart two `predictors` are from eachother.  For example when `lstat` is high `medv` is low.  And when `rad` is high `tax` is also high.  The more red something is the more they differ, and the more green something is the more they are simmilar.  Yellow indicates that there is almost no correlation between the two variables.
+
+<h5>$age.$</h5>
+
+```{r}
+lm.age.d <- Boston %$% lm(crim~poly(age,3))
+pander(summary(lm.age.d)$coefficients)
+```
+> the cubic polynomial is not statistically signifigant
+
+<h5>$black.$</h5>
+
+```{r}
+lm.black.d <- Boston %$% lm(crim~poly(black,3))
+pander(summary(lm.black.d)$coefficients)
+```
+
+> the cubic coefficient is not statistically signifigant
+
+<h5>$chas.$</h5>
+
+```{r}
+lm.chas.d <- Boston %$% lm(crim~poly(chas,1))
+pander(summary(lm.chas.d)$coefficients)
+```
+
+> can only be evaulated to one degree because `chas` is a boolean variable (1's and 0's) and it is not statistically signifigant
+
+<h5>$dis.$</h5>
+
+```{r}
+lm.dis.d <- Boston %$% lm(crim~poly(dis,3))
+pander(summary(lm.dis.d)$coefficients)
+```
+
+> all three polynomials are statistically signifigant
+
+<h5>$indus.$</h5>
+
+```{r}
+lm.indus.d <- Boston %$% lm(crim~poly(indus,3))
+pander(summary(lm.indus.d)$coefficients)
+```
+> the square polynomial is not statistically signifigant
+
+<h5>$lstat.$</h5>
+
+```{r}
+lm.lstat.d <- Boston %$% lm(crim~poly(lstat,3))
+pander(summary(lm.lstat.d)$coefficients)
+```
+
+> the square and cubic polynomials are not statistically signifigant
+
+<h5>$medv.$</h5>
+
+```{r}
+lm.medv.d <- Boston %$% lm(crim~poly(medv,3))
+pander(summary(lm.medv.d)$coefficients)
+```
+
+> all three polynomials are statistically signifigant
+
+<h5>$nox.$</h5>
+
+```{r}
+lm.nox.d <- Boston %$% lm(crim~poly(nox,3))
+pander(summary(lm.nox.d)$coefficients)
+```
+
+> all three polynomials are statistically signifigant
+
+<h5>$ptratio.$</h5>
+
+```{r}
+lm.ptratio.d <- Boston %$% lm(crim~poly(ptratio,3))
+pander(summary(lm.ptratio.d)$coefficients)
+```
+
+> the cubic polynomial is not statistically signifigant, and the square polynomial is barely statistically signifigant
+
+<h5>$rad.$</h5>
+
+```{r}
+lm.rad.d <- Boston %$% lm(crim~poly(rad,3))
+pander(summary(lm.rad.d)$coefficients)
+```
+
+> the cubic polynomial is not statistically signifigant, and the square polynomial is barely statistically signifigant, less so than for ptratio
+
+<h5>$rm.$</h5>
+
+```{r}
+lm.rm.d <- Boston %$% lm(crim~poly(rm,3))
+pander(summary(lm.rm.d)$coefficients)
+```
+
+> the cubic polynomial is not statistically signifigant, and the square polynomial is just almost statistically signifigant but not quite
+
+
+<h5>$tax.$</h5>
+
+```{r}
+lm.tax.d <- Boston %$% lm(crim~poly(tax,3))
+pander(summary(lm.tax.d)$coefficients)
+```
+
+> the cubic polynomial is not statistically signifigant
+
+<h5>$zn.$</h5>
+
+```{r}
+lm.zn.d <- Boston %$% lm(crim~poly(zn,3))
+pander(summary(lm.zn.d)$coefficients)
+```
+
+> the cubic polynomial is not statistically signifigant, and the square polynomial is almost statistically signifigant
+
+> There is a possibility of a non linear relationship for `indus`, `medv` and,  `nox` with `crim`.
+`
