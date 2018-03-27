@@ -1,0 +1,277 @@
+---
+title: ISLR Chapter 4
+author: Aaron Shaffer
+date: '2018-03-12'
+slug: islr_ch4
+categories:
+  - r
+  - ISLR
+tags:
+  - homework
+  - R Markdown
+summary: "ISLR Ch4, Exercises #5, #13"
+header-includes:
+  \usepackage[dvipsnames]{xcolor}
+---
+
+
+
+<h1>
+ISLR Ch4 Exercises #5, #13
+</h1>
+<h3>
+<ol start="5" style="list-style-type: decimal">
+<li>We now examine the differences between LDA and QDA.</li>
+</ol>
+</h3>
+<h4>
+<span class="math inline">\((a)\)</span> If the Bayes decision boundary is linear, do we expect <code>LDA</code> or <code>QDA</code> to perform better on the training set? On the test set?
+</h4>
+<blockquote>
+<p>On the training set of data you would expect <code>LDA</code> to perform better than the <code>QDA</code> if the decision boundary is linear and there are relatively few training observations. Otherwise <code>QDA</code> will perform better.</p>
+</blockquote>
+<blockquote>
+<p>On the test set of data LDA will be better if the common correlation between <code>X_1</code> and <code>X_2</code> have and the bayes decision boundary is linear.</p>
+</blockquote>
+<h4>
+<span class="math inline">\((b)\)</span> If the Bayes decision boundary is non-linear, do we expect <code>LDA</code> or <code>QDA</code> to perform better on the training set? On the test set?
+</h4>
+<blockquote>
+<p>On the training set of data <code>QDA</code> will perform better than <code>LDA</code> unless there are very few observations</p>
+</blockquote>
+<blockquote>
+<p>On the test set of data <code>QDA</code> will perform better</p>
+</blockquote>
+<h4>
+<span class="math inline">\((c)\)</span> In general, as the sample size <code>n</code> increases, do we expect the test prediction accuracy of <code>QDA</code> relative to <code>LDA</code> to improve, decline, or be unchanged? Why?
+</h4>
+<blockquote>
+<p>We expect the relative prediction accuracy of <code>QDA</code> model to improve because it is more flexible than the <code>LDA</code> model. This flexibility allows <code>QDA</code> to outpeform LDA because once <code>N</code> becomes large enough variance of the classifier is not a major concern, And with enough <code>K's</code> the assumption of a common covariance matrix for the <code>K</code> classes is unrealistic.</p>
+</blockquote>
+<h4>
+<span class="math inline">\((d)\)</span> <code>True</code> or <code>False</code>: Even if the Bayes decision boundary for a given problem is linear, we will probably achieve a superior test error rate using <code>QDA</code> rather than <code>LDA</code> because <code>QDA</code> is flexible enough to model a linear decision boundary. Justify your answer.
+</h4>
+<blockquote>
+<p><code>True</code>, <code>LDA</code> is much more affected by the variance in the observations than <code>QDA</code> so unless there is extremely low variance in the data or very few observations <code>QDA</code> should outpeform <code>LDA</code></p>
+</blockquote>
+<h3>
+<ol start="13" style="list-style-type: decimal">
+<li>Using the Boston data set, fit classification models in order to predict whether a given suburb has a crime rate above or below the median. Explore logistic regression, LDA, and KNN models using various subsets of the predictors. Describe your findings.</li>
+</ol>
+</h3>
+<pre class="r"><code>Boston &lt;- MASS::Boston %&gt;% as.data.frame()
+crim &lt;- Boston %$% ifelse(crim &lt; median(crim), 0 , 1)
+Boston$crim.rate &lt;- crim
+X &lt;- split(Boston, rep(1:2, nrow(Boston)/2))
+Train &lt;- as.data.frame(X[[1]])
+Test  &lt;- as.data.frame(X[[2]])</code></pre>
+<h4>
+Logisitc Regeression
+</h4>
+<pre class="r"><code>fit.glm &lt;- glm(crim.rate ~ . - crim - crim.rate, 
+               data=Boston,
+               family=binomial,
+               subset=rownames(Train))
+
+probs &lt;- predict(fit.glm, Test, type = &quot;response&quot;)
+pred.glm &lt;- ifelse(probs &lt; .5, 0,1)
+table(pred.glm, Test$crim.rate)</code></pre>
+<pre><code>##         
+## pred.glm   0   1
+##        0 116  11
+##        1  12 114</code></pre>
+<pre class="r"><code>mean(pred.glm != Test$crim.rate)</code></pre>
+<pre><code>## [1] 0.09090909</code></pre>
+<blockquote>
+<p>Logistic regression over boston using every other row as training/testing data and all predictors resulted in a test error rate of 9.09%</p>
+</blockquote>
+<pre class="r"><code>fit.glm &lt;- glm(crim.rate ~ 
+                 indus + age+ dis + rad + ptratio + black + nox + indus*age,  
+               data=Boston,
+               family=binomial,
+               subset=rownames(Train))
+
+probs &lt;- predict(fit.glm, Test, type = &quot;response&quot;)
+pred.glm &lt;- ifelse(probs &lt; .5, 0,1)
+table(pred.glm, Test$crim.rate)</code></pre>
+<pre><code>##         
+## pred.glm   0   1
+##        0 117   9
+##        1  11 116</code></pre>
+<pre class="r"><code>mean(pred.glm != Test$crim.rate)</code></pre>
+<pre><code>## [1] 0.07905138</code></pre>
+<blockquote>
+<p>A second logistic regression model using <span class="math inline">\(indus^1\)</span> <span class="math inline">\(age^2\)</span> <span class="math inline">\(dis^3\)</span> <span class="math inline">\(ptratio^4\)</span> <span class="math inline">\(black^5\)</span> <span class="math inline">\(nox^6\)</span> and <span class="math inline">\(indus*age^7\)</span> resulted in a test error rate of 7.91%</p>
+</blockquote>
+<ol style="list-style-type: decimal">
+<li><p><code>indus</code> : proportion of non-retail business acres per town.</p></li>
+<li><p><code>age</code> : proportion of owner-occupied units built prior to 1940.</p></li>
+<li><p><code>dis</code> : weighted mean of distances to five Boston employment centres.</p></li>
+<li><p><code>ptratio</code> : pupil-teacher ratio by town.</p></li>
+<li><p><code>black</code> : <span class="math inline">\(1000(Bk - 0.63)^2\)</span> where <code>Bk</code> is the proportion of blacks by town.</p></li>
+<li><p><code>nox</code> : nitrogen oxides concentration (parts per 10 million).</p></li>
+<li><p><code>indus*age</code> : the interaction between <code>indus</code> and <code>age</code></p></li>
+</ol>
+<h4>
+LDA
+</h4>
+<pre class="r"><code>lda.fit &lt;- MASS::lda(crim.rate ~ . - crim - crim.rate, 
+               data=Boston,
+               family=binomial,
+               subset=rownames(Train))
+
+probs &lt;- predict(lda.fit, Test, model = &quot;response&quot;)
+table(probs$class, Test$crim.rate)</code></pre>
+<pre><code>##    
+##       0   1
+##   0 124  28
+##   1   4  97</code></pre>
+<pre class="r"><code>mean(probs$class != Test$crim.rate)</code></pre>
+<pre><code>## [1] 0.1264822</code></pre>
+<blockquote>
+<p>LDA over boston using every other row as training/testing data and all predictors resulted in a test error rate of 12.65%</p>
+</blockquote>
+<pre class="r"><code>lda.fit &lt;-  MASS::lda(crim.rate ~ 
+                        indus + age + dis + rad + ptratio + black + nox + indus*age,  
+               data=Boston,
+               family=binomial,
+               subset=rownames(Train))
+
+probs &lt;- predict(lda.fit, Test, model = &quot;response&quot;)
+table(probs$class, Test$crim.rate)</code></pre>
+<pre><code>##    
+##       0   1
+##   0 122  29
+##   1   6  96</code></pre>
+<pre class="r"><code>mean(probs$class != Test$crim.rate)</code></pre>
+<pre><code>## [1] 0.1383399</code></pre>
+<blockquote>
+<p>A second LDA over boston using the same predictors as the second GLM resulted in a test error rate of 15.02%</p>
+</blockquote>
+<h4>
+KNN
+</h4>
+<pre class="r"><code>set.seed(1)
+best &lt;- .Machine$integer.max
+best.i &lt;- 0
+worst &lt;- 0
+worst.i &lt;- 0
+for(i in 1:253){
+  k &lt;- class::knn(Train,Test, Train$crim.rate, k = i)
+  error &lt;- 100 * mean(k != Train$crim.rate)
+  if(error &lt; 10) {
+    cat(sprintf(&quot;&lt;h5&gt;K == %d&lt;/h5&gt;&quot;,i))
+    cat(pander(table(k,Test$crim.rate)))
+    cat(sprintf(&quot;&lt;p&gt;When K == %d, KNN has a test error rate of %.2f%%&lt;/p&gt;&quot;,i,error))
+  }
+  if(error &lt; best) {
+    best &lt;- error
+    best.i &lt;- i    
+  }
+  if(error &gt; worst) {
+    worst &lt;- error
+    worst.i &lt;- i    
+  }
+}</code></pre>
+<h5>
+K == 1
+</h5>
+<table style="width:29%;">
+<colgroup>
+<col width="12%" />
+<col width="8%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">0</th>
+<th align="center">1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>0</strong></td>
+<td align="center">116</td>
+<td align="center">10</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>1</strong></td>
+<td align="center">12</td>
+<td align="center">115</td>
+</tr>
+</tbody>
+</table>
+<p>
+When K == 1, KNN has a test error rate of 8.30%
+</p>
+<h5>
+K == 3
+</h5>
+<table style="width:29%;">
+<colgroup>
+<col width="12%" />
+<col width="8%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">0</th>
+<th align="center">1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>0</strong></td>
+<td align="center">116</td>
+<td align="center">11</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>1</strong></td>
+<td align="center">12</td>
+<td align="center">114</td>
+</tr>
+</tbody>
+</table>
+<p>
+When K == 3, KNN has a test error rate of 9.49%
+</p>
+<h5>
+K == 4
+</h5>
+<table style="width:29%;">
+<colgroup>
+<col width="12%" />
+<col width="8%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">0</th>
+<th align="center">1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>0</strong></td>
+<td align="center">117</td>
+<td align="center">11</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>1</strong></td>
+<td align="center">11</td>
+<td align="center">114</td>
+</tr>
+</tbody>
+</table>
+<p>
+When K == 4, KNN has a test error rate of 9.88%
+</p>
+<h5>
+When K == 1, KNN performed the best with a test error rate of 8.30%
+</h5>
+<h5>
+When K == 251, KNN performed the worst with a test error rate of 49.41%
+</h5>

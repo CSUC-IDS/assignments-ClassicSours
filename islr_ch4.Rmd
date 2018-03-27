@@ -1,0 +1,175 @@
+---
+title: ISLR Chapter 4
+author: Aaron Shaffer
+date: '2018-03-12'
+slug: islr_ch4
+categories:
+  - r
+  - ISLR
+tags:
+  - homework
+  - R Markdown
+summary: "ISLR Ch4, Exercises #5, #13"
+header-includes:
+  \usepackage[dvipsnames]{xcolor}
+---
+
+
+<h1> ISLR Ch4 Exercises #5, #13 </h1>
+
+<h3>
+  5. We now examine the differences between LDA and QDA.
+</h3>
+
+<h4>
+  $(a)$ If the Bayes decision boundary is linear, do we expect `LDA` or `QDA` to perform better on the training set? On the test set?
+</h4>
+
+> On the training set of data you would expect `LDA` to perform better than the `QDA` if the decision boundary is linear and there are relatively few training observations.  Otherwise `QDA` will perform better.
+
+> On the test set of data LDA will be better if the common correlation between `X_1` and `X_2` have and the bayes decision boundary is linear.
+
+<h4>
+  $(b)$ If the Bayes decision boundary is non-linear, do we expect `LDA` or `QDA` to perform better on the training set? On the test set?
+</h4>
+
+> On the training set of data `QDA` will perform better than `LDA` unless there are very few observations
+
+> On the test set of data `QDA` will perform better
+
+<h4>
+  $(c)$ In general, as the sample size `n` increases, do we expect the test prediction accuracy of `QDA` relative to `LDA` to improve, decline, or be unchanged? Why?
+</h4>
+
+> We expect the relative prediction accuracy of `QDA` model to improve because it is more flexible than the `LDA` model.  This flexibility allows `QDA` to outpeform LDA because once `N` becomes large enough variance of the classifier is not a major concern, And with enough `K's` the assumption of a common covariance matrix for the `K` classes is unrealistic.
+
+<h4>
+  $(d)$ `True` or `False`: Even if the Bayes decision boundary for a given problem is linear, we will probably achieve a superior test error rate using `QDA` rather than `LDA` because `QDA` is flexible enough to model a linear decision boundary. Justify your answer.
+</h4>
+
+> `True`, `LDA` is much more affected by the variance in the observations than `QDA` so unless there is extremely low variance in the data or very few observations `QDA` should outpeform `LDA`
+
+<h3>
+  13. Using the Boston data set, fit classification models in order to predict whether a given suburb has a crime rate above or below the median. Explore logistic regression, LDA, and KNN models using various subsets of the predictors. Describe your findings. 
+</h3>
+
+```{r setup, include = FALSE, warning=FALSE,message=FALSE}
+library(magrittr)
+library(pander)
+```
+
+```{r}
+Boston <- MASS::Boston %>% as.data.frame()
+crim <- Boston %$% ifelse(crim < median(crim), 0 , 1)
+Boston$crim.rate <- crim
+X <- split(Boston, rep(1:2, nrow(Boston)/2))
+Train <- as.data.frame(X[[1]])
+Test  <- as.data.frame(X[[2]])
+```
+
+<h4> Logisitc Regeression </h4>
+
+```{r, message=FALSE, warning=FALSE}
+fit.glm <- glm(crim.rate ~ . - crim - crim.rate, 
+               data=Boston,
+               family=binomial,
+               subset=rownames(Train))
+
+probs <- predict(fit.glm, Test, type = "response")
+pred.glm <- ifelse(probs < .5, 0,1)
+table(pred.glm, Test$crim.rate)
+mean(pred.glm != Test$crim.rate)
+```
+
+> Logistic regression over boston using every other row as training/testing data and all predictors resulted in a test error rate of 9.09%
+
+```{r, message=FALSE, warning=FALSE}
+fit.glm <- glm(crim.rate ~ 
+                 indus + age+ dis + rad + ptratio + black + nox + indus*age,  
+               data=Boston,
+               family=binomial,
+               subset=rownames(Train))
+
+probs <- predict(fit.glm, Test, type = "response")
+pred.glm <- ifelse(probs < .5, 0,1)
+table(pred.glm, Test$crim.rate)
+mean(pred.glm != Test$crim.rate)
+```
+
+> A second logistic regression model using $indus^1$ $age^2$ $dis^3$ $ptratio^4$ $black^5$ $nox^6$ and $indus*age^7$ resulted in a test error rate of 7.91%
+
+1. `indus` : proportion of non-retail business acres per town.
+
+2. `age` : proportion of owner-occupied units built prior to 1940.
+
+3. `dis` : weighted mean of distances to five Boston employment centres.
+
+4. `ptratio` : pupil-teacher ratio by town.
+
+5. `black` : $1000(Bk - 0.63)^2$ where `Bk` is the proportion of blacks by town.
+
+6. `nox` : nitrogen oxides concentration (parts per 10 million).
+
+7. `indus*age` : the interaction between `indus` and `age`
+
+
+<h4>LDA</h4>
+```{r}
+lda.fit <- MASS::lda(crim.rate ~ . - crim - crim.rate, 
+               data=Boston,
+               family=binomial,
+               subset=rownames(Train))
+
+probs <- predict(lda.fit, Test, model = "response")
+table(probs$class, Test$crim.rate)
+mean(probs$class != Test$crim.rate)
+```
+
+> LDA over boston using every other row as training/testing data and all predictors resulted in a test error rate of 12.65%
+
+```{r}
+lda.fit <-  MASS::lda(crim.rate ~ 
+                        indus + age + dis + rad + ptratio + black + nox + indus*age,  
+               data=Boston,
+               family=binomial,
+               subset=rownames(Train))
+
+probs <- predict(lda.fit, Test, model = "response")
+table(probs$class, Test$crim.rate)
+mean(probs$class != Test$crim.rate)
+```
+
+> A second LDA over boston using the same predictors as the second GLM resulted in a test error rate of 15.02%  
+
+<h4>KNN</h4>
+
+```{r,results="asis"}
+set.seed(1)
+best <- .Machine$integer.max
+best.i <- 0
+worst <- 0
+worst.i <- 0
+for(i in 1:253){
+  k <- class::knn(Train,Test, Train$crim.rate, k = i)
+  error <- 100 * mean(k != Train$crim.rate)
+  if(error < 10) {
+    cat(sprintf("<h5>K == %d</h5>",i))
+    cat(pander(table(k,Test$crim.rate)))
+    cat(sprintf("<p>When K == %d, KNN has a test error rate of %.2f%%</p>",i,error))
+  }
+  if(error < best) {
+    best <- error
+    best.i <- i    
+  }
+  if(error > worst) {
+    worst <- error
+    worst.i <- i    
+  }
+}
+```
+```{r, echo = FALSE, results ="asis"}
+cat(sprintf("<h5>When K == %d, KNN performed the best with a test error rate of %.2f%%</h5>",
+            best.i,best))
+cat(sprintf("<h5>When K == %d, KNN performed the worst with a test error rate of %.2f%%</h5>",
+            worst.i,worst))
+```
