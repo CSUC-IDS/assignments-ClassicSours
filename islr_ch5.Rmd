@@ -1,0 +1,109 @@
+---
+title: ISLR Chapter 5
+author: Aaron Shaffer
+date: '2018-03-30'
+slug: islr_ch5
+categories:
+  - ISLR
+  - R
+tags:
+  - homework
+summary: "ISLR Ch5, Exercises #3, #5"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+ISLR Ch 5: #3, #5
+
+## 3 We now review k-fold cross-validation.
+
+$(a)$ Explain how k-fold cross-validation is implemented.
+
+k-fold cross-validation is implemented by chosing a number of folds and then splitting the data into k nearly evenly partitioned 
+
+$(b)$ What are the advantages and disadvantages of k-fold cross-validation relative to:
+
+> i. The validation set approach?
+
+> Having more than one set of training data allows for a better model.  If there is a low amount of a certain population represented in a dataset than a single validation set might not do a good job representing how that low variable represented by the low population predicts the outcomes.  The trade for this is time complexity.  Since the validation set approach only uses one validation set it is much faster than k-fold cross-validation.
+
+> ii. LOOCV?
+
+> Time complexity, k-fold is much faster than LOOCV and its accurate enough.  Disadvantage is that it might be less accurate than LOOCV.
+
+## 5. In Chapter 4, we used logistic regression to predict the probability of `default` using `income` and `balance` on the `Default` data set. We will now estimate the test error of this logistic regression model using the validation set approach. Do not forget to set a random seed before beginning your analysis.
+
+$(a)$ Fit a logistic regression model that uses income and balance to predict default.
+
+```{r, message=FALSE,echo=FALSE}
+library(dplyr)
+library(pander)
+library(magrittr)
+```
+
+```{r}
+library(ISLR)
+set.seed(1)
+summary(glm(default ~ income + balance, data = Default, family = "binomial"))$coefficient %>% pander
+```
+
+$(b)$ Using the validation set approach, estimate the test error of this model. In order to do this, you must perform the following steps:
+
+> i. Split the sample set into a training set and a validation set.
+
+```{r}
+N <- nrow(Default)
+train <- base::sample(N, N / 2)
+```
+> ii. Fit a multiple logistic regression model using only the training observations.
+
+```{r}
+train.model <- glm(default ~ income + balance, data = Default, family = "binomial", subset = train)
+summary(train.model) %>% pander
+```
+> iii. Obtain a prediction of default status for each individual in the validation set by computing the posterior probability of default for that individual, and classifying the individual to the default category if the posterior probability is greater than 0.5.
+
+```{r}
+preds <- ifelse(predict(train.model, newdata = Default[-train,], type = "response") > .5, "Yes", "No")
+```
+
+> iv. Compute the validation set error, which is the fraction of the observations in the validation set that are misclassified.
+
+```{r}
+mean(preds != Default$default)
+```
+```{r, echo = FALSE, results = 'asis'}
+cat(sprintf("> The validation set error for this data is %.2f%%",mean(preds != Default$default) * 100))
+```
+
+$(c)$ Repeat the process in $(b)$ three times, using three different splits of the observations into a training set and a validation set. Comment on the results obtained.
+
+```{r, results = 'asis'}
+for(i in c(1:3)) {
+  train <- base::sample(N, N / 2)
+  train.model <- glm(default ~ income + balance, data = Default, 
+                     family = "binomial", subset = train)
+  preds <- ifelse(predict(train.model, newdata = Default[-train,], 
+                          type = "response") > .5, "Yes", "No")
+  cat(summary(train.model) %>% pander)
+  cat(sprintf("> The validation set error of split:%d of this dataset is %.2f%%\n\n",i,mean(preds != Default$default) * 100))
+}
+```
+
+> All three new splits of the data had an error in the ~4.5% region the estimates and all of other values from the linear models are also all very close to eachother.  This shows that splitting the data in half produces variable results all very close to eachother.
+
+$(d)$ Now consider a logistic regression model that predicts the probability of default using income , balance , and a dummy variable for student . Estimate the test error for this model using the validation set approach. Comment on whether or not including a dummy variable for student leads to a reduction in the test error rate.
+
+```{r}
+train <- base::sample(N, N / 2)
+train.model <- glm(default ~ income + balance + student, data = Default, family = "binomial", subset = train)
+preds <- ifelse(predict(train.model, newdata = Default[-train,], type = "response") > .5, "Yes", "No")
+summary(train.model) %>% pander
+```
+
+```{r, echo = FALSE, results = 'asis'}
+cat(sprintf("> The validation set error for this data is %.2f%%",mean(preds != Default$default) * 100))
+```
+
+> Adding the `student` dummy variable to the logistic regression model didn't change the error by any signifigant amount.  The test error rate is within the range of previous test error rates without the `student` variable 
