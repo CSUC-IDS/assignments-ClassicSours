@@ -17,3 +17,6 @@
 - On 4(a) I feel like the RSS would be lower for the linear regression since we know that the true relationship is linear. I'm 100% sure though. 
 - I like how to plot grids look and save space
 - On line 185 the function expand_scale() doesn't work for me, maybe the library isn't loaded.
+
+##ISLR CHAPTER 5 - Mitch
+- Good job, theres not much to add. I'm not sure what the cat() function is adding that a line of text wouldn't though. 
