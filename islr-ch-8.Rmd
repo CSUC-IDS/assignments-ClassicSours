@@ -84,7 +84,7 @@ training.tree <- tree(Purchase ~ ., data = OJ.train)
 summary(training.tree)
 ```
 
-The fitted tree has $8 terminal nodes$ and has a $training error rate of 0.1675$
+The fitted tree has `8 terminal nodes` and has a `training error rate of 0.1675`
 
 $(c)$ Type in the name of the tree object in order to get a detailed text output. Pick one of the terminal nodes, and interpret the information displayed.
 
