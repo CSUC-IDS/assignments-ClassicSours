@@ -20,3 +20,6 @@
 
 ##ISLR CHAPTER 5 - Mitch
 - Good job, theres not much to add. I'm not sure what the cat() function is adding that a line of text wouldn't though. 
+
+## ISLR Ch 4 (Robin)
+- You can replace `cat()` language with inline R code. For example I could say there were ``` `r NROW(iris)` ``` observations in the Iris data set without having to `cat()` or `sprintf()` the output, or have it in a code chunk. 
