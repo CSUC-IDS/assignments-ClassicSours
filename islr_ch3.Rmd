@@ -26,7 +26,7 @@ output:
 <h4> $(a)$ Suppose that the true relationship between `X` and `Y` is `linear`, i.e. $Y = \beta_0 + \beta_{1}X + \epsilon$. Consider the training residual sum of squares `(RSS)` for the linear regression, and also the training `RSS` for the cubic regression. Would we expect one to be lower than the other, would we expect them to be the same, or is there not enough information to tell? Justify your answer.</h4>
 
 > We would expect `RSS` to be lower for the `cubic regression`.  This model is much more flexible and will allow for the line to be much closer to the training data set. 
-# I feel like the RSS would be lower for the linear regression since we know that the true relationship is linear. I'm 100% sure though. 
+
 
 <h4> $(b)$ Answer $(a)$ using test rather than training RSS. </h4>
 
@@ -125,7 +125,7 @@ library(gridExtra)
 grid.arrange(gg.age, gg.black, gg.dis, gg.lstat, gg.medv,
              gg.ptratio, gg.rad, gg.rm, gg.tax, gg.zn, ncol = 5)
 ```
-#Nice grid of plots
+
 
 <h4>$(b)$ Fit a multiple regression model to predict the response using all of the predictors. Describe your results. For which predictors can we reject the null hypothesis $H_0$ : $\beta_j = 0$?</h4>
 
